@@ -1,0 +1,5 @@
+,Input,Output,MSE,RMSE,PSNR,SSIM,UQI,MSSSIM,ERGAS,SCC,RASE,SAM
+0,E:\projects\ISQR-Model\sample_run_folder\input\grayscale\2015_00001_256.jpg,E:\projects\ISQR-Model\sample_run_folder\output\500\2015_00001_500.jpg,7605.706,87.2107,9.3194,"(np.float64(0.3869), np.float64(0.6651))",0.3395,0.6914,18.6772,0.408,4507.2343,0.2712
+0,E:\projects\ISQR-Model\sample_run_folder\input\grayscale\2015_00003_256.jpg,E:\projects\ISQR-Model\sample_run_folder\output\500\2015_00003_500.jpg,6333.3303,79.5822,10.1145,"(np.float64(0.2741), np.float64(0.5877))",0.2172,0.5675,20.8076,0.4992,5042.5445,0.2752
+0,E:\projects\ISQR-Model\sample_run_folder\input\grayscale\CM1_256.jpg,E:\projects\ISQR-Model\sample_run_folder\output\500\CM1_500.jpg,4108.6245,64.0986,11.9938,"(np.float64(0.3321), np.float64(0.6628))",0.2539,0.6815,22.5321,0.545,4889.3227,0.3326
+0,E:\projects\ISQR-Model\sample_run_folder\input\grayscale\CM2_256.jpg,E:\projects\ISQR-Model\sample_run_folder\output\500\CM2_500.jpg,6997.4334,83.6507,9.6814,"(np.float64(0.35), np.float64(0.6384))",0.2993,0.6387,18.7793,0.848,4657.0981,0.1637

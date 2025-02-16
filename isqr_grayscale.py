@@ -7,134 +7,195 @@ Original file is located at
     https://colab.research.google.com/drive/1U4TJ-nkK6W5Z4GqnEJSxe-pjaCqYBOOi
 """
 
-from google.colab import drive
-drive.mount('/content/drive/')
 
 import os
-
-import sys
-# set_printoptions(threshold=sys.maxsize)
-from PIL import Image
 import cv2
-from scipy.stats import entropy
-from google.colab.patches import cv2_imshow
-from sewar.full_ref import mse, rmse, psnr, uqi, ssim, ergas, scc, rase, sam, msssim, vifp
 from matplotlib import pyplot as plt
-import os
+from sewar.full_ref import mse, rmse, psnr, uqi, ssim, ergas, scc, rase, sam, msssim, vifp
 import numpy as np
 import random
 import pandas as pd
-from skimage import io
-from tqdm import tqdm
-import math
+import argparse
+
 
 def conv_img3_arcsin(img):
-    small = cv2.resize(img,(256,256))
-    converted = np.zeros((256,256))
-    miny=np.amin(small)
-    maxy=np.amax(small)
-    #miny = 0
-    #maxy = 255
-    for i in range(0,256):
-        for j in range(0,256):
-            converted[i][j] = 2.0*np.arccos(np.sqrt((float(small[i][j])-float(miny))/(float(maxy)-float(miny)))) # ISQR Encoding
+    small = cv2.resize(img, (256, 256))
+    converted = np.zeros((256, 256))
+    miny = np.amin(small)
+    maxy = np.amax(small)
+    for i in range(0, 256):
+        for j in range(0, 256):
+            converted[i][j] = 2.0 * np.arccos(np.sqrt((float(small[i][j]) - float(miny)) / (float(maxy) - float(miny)))) # ISQR Encoding
     return converted
+
+
+def conv_rgb3_arcsin(img):
+    # img = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
+    img = cv2.resize(img, (256, 256))
+    b, g, r = img[:, :, 0], img[:, :, 1], img[:, :, 2]
+    b1, g1, r1 = conv_img3_arcsin(b), conv_img3_arcsin(g), conv_img3_arcsin(r)
+    img = cv2.resize(img, (256, 256))
+    img[:, :, 0], img[:, :, 1], img[:, :, 2] = b1, g1, r1
+    return img
+
 
 def conv_img1_arcsin(img):
-    small = cv2.resize(img,(256,256))
-    H = np.array([[1,0],[0,1]])
-    converted = np.zeros((256,256))
+    small = cv2.resize(img, (256, 256))
+    H = np.array([[1, 0], [0, 1]])
+    converted = np.zeros((256, 256))
     img = small
-    for i in range(0,len(img)) :
-      for j in range(0,len(img[0])):
-        a = img [i][j]
-        a1= np.sin(a)
-        a2 = np.cos(a)
-        i_state= np.array([[a2],[a1]])
-        c = convert_a(H,i_state)
-        converted [i][j] = c
-
+    for i in range(0, len(img)):
+        for j in range(0, len(img[0])):
+            a = img[i][j]
+            a1 = np.sin(a)
+            a2 = np.cos(a)
+            i_state = np.array([[a2], [a1]])
+            c = convert_a(H, i_state)
+            converted[i][j] = c
     return converted
 
-def convert_a(H,i_state):
-    cov = np.dot(H,i_state)
-    si = cov * (1/np.sqrt (1))
-    alpha=si[0][0]
-    beta=si[1][0]
-    t=[alpha , beta]
-    e=random.choices(t,weights=[alpha**2,beta**2],k=1)
+
+def conv1_rgb_arcsin(img):
+    b, g, r = img[:, :, 0], img[:, :, 1], img[:, :, 2]
+    b1, g1, r1 = conv_img1_arcsin(b), conv_img1_arcsin(g), conv_img1_arcsin(r)
+    img[:, :, 0], img[:, :, 1], img[:, :, 2] = b1, g1, r1
+    return img
+
+
+def convert_a(H, i_state):
+    cov = np.dot(H, i_state)
+    si = cov * (1 / np.sqrt(1))
+    alpha = si[0][0]
+    beta = si[1][0]
+    t = [alpha, beta]
+    e = random.choices(t, weights=[alpha**2, beta**2], k=1)
     if e[0] == beta:
-      c = 1*255
+        c = 1 * 255
     else:
-      c = 0*255
+        c = 0 * 255
     return c
 
-def convshots_bw_arcsin(img,shots=200):
-    img_list=[]
+
+def convshots_bw_arcsin(img, shots=200):
+    img_list = []
     img1 = conv_img3_arcsin(img)
     for i in range(shots):
         conv2 = conv_img1_arcsin(img1)
         img_list += [conv2]
-    converted = np.zeros((256,256))
+    converted = np.zeros((256, 256))
     sh = 0
-    print(len(img),len(img[0]))
-    for i in range(0,len(img)):
-         for j in range(0,len(img[0])):
-                val = 0
-                for l in range(shots)
-                    val += img_list[l][i][j]
-                    '''
-                    if img_list[l][i][j][k] in val:
-                        val[img_list[l][i][j][k]]+=1
-                    else:
-                        val[img_list[l][i][j][k]]=1
-                keys = list(val.keys())
-                print(val)
-                if(len(keys)>1):
-                    if val[keys[0]]>val[keys[1]]:
-                        converted[i][j][k] = keys[0]
-                    else:
-                        converted[i][j][k] = keys[1]
-                else:
-                    converted[i][j][k] = keys[0]
-                    '''
-                converted[i][j] = val/shots
-                sh+=1
+    for i in range(0, len(img)):
+        for j in range(0, len(img[0])):
+            val = 0
+            for k in range(shots):
+                val += img_list[k][i][j]
+            converted[i][j] = val/shots
+            sh += 1
     return converted
+
+
+def convshots_rgb_arcsin(img, shots=200):
+    img_list = []
+    img1 = conv_rgb3_arcsin(img)
+    print(img1)
+    for i in range(shots):
+        conv2 = conv1_rgb_arcsin(img1)
+        img_list += [conv2]
+    converted = np.zeros((256, 256, 3))
+    sh = 0
+    for i in range(0, len(img)):
+        for j in range(0, len(img[0])):
+            for k in range(3):
+                val = 0
+                for o in range(shots):
+                    val += img_list[o][i][j][k]
+                converted[i][j] = val/shots
+                sh += 1
+    print(converted)
+    return converted
+
 
 def convert_single_image(path, folder, pathy, filey):
     img = cv2.imread(os.path.join(path, folder, filey))
-    small = cv2.resize(img,(256,256))
+    small = cv2.resize(img, (256, 256))
     if filey.endswith(".png"):
         small = cv2.cvtColor(small, cv2.COLOR_BGRA2GRAY)
     else:
         small = cv2.cvtColor(small, cv2.COLOR_BGR2GRAY)
     real = small
     k = 500
-    conv = convshots_bw_arcsin(real,shots=k)
-    cv2.imwrite(os.path.join(pathy, folder, filey.split(".")[0]+".jpg"),conv)
+    conv = convshots_bw_arcsin(real, shots=k)
+    cv2.imwrite(os.path.join(pathy, folder, filey.split(".")[0]+".jpg"), conv)
     return True
 
-#Google Drive
 
-files = [f for f in os.listdir('/content/drive/MyDrive/CM_256*256 grayscale')]
-print(files)
-os.makedirs('/content/drive/MyDrive/CM_256*256 ISQR', exist_ok=True)
+def run_bw_on_folder(input_folder="", plot=False, number_of_shots=[1, 100, 500]):
+    # Load Local Images
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    if input_folder == "":
+        input_folder = os.path.join(dir_path, 'Coal Mines Dataset', 'input')
+        files = [f for f in os.listdir(input_folder)]
+        output_folder = os.path.join(dir_path, 'Coal Mines Dataset', 'output')
+    else:
+        files = [f for f in os.listdir(input_folder)]
+        output_folder = os.path.join(os.path.dirname(input_folder), 'output')
+    os.makedirs(output_folder, exist_ok=True)
+    print("Input Folder", input_folder)
+    print("Output folder", output_folder)
+    print(len(files), "input files detected")
 
-files = [f for f in os.listdir("/content/drive/MyDrive/CM_256*256 grayscale") if os.path.isfile(os.path.join("/content/drive/MyDrive/CM_256*256 grayscale", f))]
-print(files)
+    df = pd.DataFrame()
+    for filey in files:
+        print("Processing", filey)
+        img = cv2.imread(os.path.join(input_folder, filey))
+        small = cv2.resize(img, (256, 256))
+        if filey.endswith(".png"):
+            small = cv2.cvtColor(small, cv2.COLOR_BGRA2GRAY)
+        else:
+            small = cv2.cvtColor(small, cv2.COLOR_BGR2GRAY)
+        if plot:
+            plt.imshow(small)
+            plt.show()
+        real = small
+        os.makedirs(os.path.join(input_folder, "grayscale"), exist_ok=True)
+        cv2.imwrite(os.path.join(input_folder, "grayscale", filey.rsplit(".")[0] + "_256.jpg"), real)
+        for k in number_of_shots:
+            conv = convshots_bw_arcsin(real, shots=k)
+            if plot:
+                plt.imshow(small)
+                plt.show()
+            os.makedirs(os.path.join(output_folder, str(k)), exist_ok=True)
+            cv2.imwrite(os.path.join(output_folder, str(k), filey.split(".")[0] + f"_{k}.jpg"), conv)
+            restored = cv2.imread(os.path.join(output_folder, str(k), filey.rsplit(".")[0] + f"_{k}.jpg"))
+            restored = cv2.cvtColor(restored, cv2.COLOR_BGR2GRAY)
+            values = {
+                        "Input": os.path.join(input_folder, "grayscale", filey.rsplit(".")[0] + "_256.jpg"),
+                        "Output": os.path.join(output_folder, str(k), filey.split(".")[0] + f"_{k}.jpg"),
+                        "MSE": np.round(mse(restored, real), 4),
+                        "RMSE": np.round(rmse(restored, real), 4),
+                        "PSNR": np.round(psnr(restored, real), 4),
+                        "SSIM": (np.round(ssim(restored, real)[0], 4), np.round(ssim(restored, real)[1], 4)),
+                        "UQI": np.round(uqi(restored, real), 4),
+                        "MSSSIM": np.round(msssim(restored, real).real, 4),
+                        "ERGAS": np.round(ergas(restored, real), 4),
+                        "SCC": np.round(scc(restored, real), 4),
+                        "RASE": np.round(rase(restored, real), 4),
+                        "SAM": np.round(sam(restored, real), 4)
+                    }
+        df = pd.concat([df, pd.DataFrame.from_dict([values])])
+    df.head()
+    df.to_csv(os.path.join(output_folder, 'Original-Restored Comparison.csv'))
 
-for filey in files:
-    print(filey)
-    img = cv2.imread(os.path.join("/content/drive/MyDrive/CM_256*256 grayscale", filey)
-    small = cv2.resize(img,(256,256))
-    small = cv2.cvtColor(small, cv2.COLOR_BGR2GRAY)
-    cv2_imshow(small)
-    real = small
-    for k in [1, 100, 500]
-      conv = convshots_bw_arcsin(real,shots=k)
-      cv2_imshow(conv)
-      cv2.imwrite(os.path.join('/content/drive/MyDrive/CM_256*256 ISQR', filey.split(".")[0]+f"_{k}.jpg"),conv)
-      cv2.imwrite(filey.split(".")[0]+".jpg",conv)
-      restored = cv2.imread(filey.split(".")[0]+".jpg")
-      restored = cv2.cvtColor(restored, cv2.COLOR_BGR2GRAY)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+                    prog='PNEQIR',
+                    description='Convert low light image to normal using PNEQIR')
+    parser.add_argument('--input_folder', type=str,
+                        help='Input folder location')
+    parser.add_argument('--plot', type=bool, default=False,
+                        help='plot images')
+    parser.add_argument('--number_of_shots', nargs='?', default=[1, 100, 500],
+                        help='Number of times measurement to be performed on quantun image')
+    args = parser.parse_args()
+    run_bw_on_folder(args.input_folder, args.plot, args.number_of_shots)
