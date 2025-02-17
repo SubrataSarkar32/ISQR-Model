@@ -15,15 +15,7 @@ DOI: (https://doi.org/10.1016/j.cviu.2018.10.010)
 
 ## Theory
 
-The superposition state we have created is:  `\cos\theta|0\rangle+\sin\theta|1\rangle`, which is represented as a 1*2 array in conv_img1_arcsin function. 
-
-The angle of encoding is defined in conv_rgb3_arcsin function. The equivalent superposition state is obtaned after the classical to quantum encodingin this phase using conv1_rgb_arcsin function where the angle valu `\theta` is obtained from conv_img3_arcsin.  
-
-convert_a function is used to choose random outcomes from the superposition states. While measuring, the state `|0\rangle` is obtained with probability `\alpha^2` and state `|1\rangle` is obtained with probability `\beta^2`
-After the random image is obtained, the images are stored in convshots_bw_arcsin, to obtain the mean of the measured images. During measurement, in this case, we have performed the measurement operation for 500 times to obtain clearer images. 
-
-To get accurate image we have performed controlled measurement operation and the comparison between the classical image and the measured image is obtained and are stored in an excel file.
-
+In this algorithm, sample datasets are stored in Google Drive and later retrieved and written back to a designated location within the drive. To ensure seamless execution, necessary libraries and dependencies are imported within the Google Colab environment. The quantum superposition state generated in this process is represented as \(\cos\theta|0\rangle+\sin\theta|1\rangle\), which is structured as a \(1 \times 2\) array in the `conv_img1_arcsin` function. The encoding process begins with the definition of the angle parameter in the `conv_rgb3_arcsin` function, followed by the classical-to-quantum encoding phase, where the equivalent superposition state is established through the `conv1_rgb_arcsin` function. Here, the angle \(\theta\) is derived using the `conv_img3_arcsin` function, ensuring accurate quantum representation. To facilitate randomness in quantum state selection, the `convert_a` function is employed to generate random outcomes from the superposition states. During the measurement process, the probability of obtaining the state \(|0\rangle\) is \(\alpha^2\), while the probability of obtaining the state \(|1\rangle\) is \(\beta^2\), aligning with the fundamental principles of quantum mechanics. After generating a random image, it is stored within the `convshots_bw_arcsin` function to compute the mean of multiple measurements, helping to reduce noise and enhance accuracy. In this study, measurement operations were performed 500 times to refine the clarity of the retrieved images, as quantum measurements inherently introduce probabilistic variations. To further improve the accuracy of the reconstructed image, a controlled measurement procedure was implemented, ensuring a reliable comparison between the classical image and its quantum-measured counterpart. Finally, the results, including the classical and quantum-measured images, were systematically recorded and stored in an Excel file for further analysis and validation.
 ## Usage
 
 To run this file you need to follow below steps:
