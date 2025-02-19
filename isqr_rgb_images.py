@@ -48,7 +48,6 @@ def conv_img3_arcsin(img):
     #maxy = 255
     for i in range(0,len(small)):
         for j in range(0,len(small[0])):
-            #converted[i][j] = 2.0*np.arcsin(np.sqrt((float(small[i][j])-float(miny))/(float(maxy)-float(miny)))) # SQR Encoding
             converted[i][j] = 2.0*np.arccos(np.sqrt((float(small[i][j])-float(miny))/(float(maxy)-float(miny)))) # ISQR Encoding
             H = np.array([[1,0],[0,1]])
             a1=np.cos(converted[i][j])
@@ -59,7 +58,6 @@ def conv_img3_arcsin(img):
             converted [i][2*j] = c[0]*255
             converted [i][2*j+1] = c[1]*255
             #converted[i][j]=small[i][j]
-            #converted[i][j] = (float(small[i][j])/255)* math.degrees(90) # FRQI Encoding
             #print(small[i][j])
 
     return converted
