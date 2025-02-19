@@ -19,7 +19,7 @@ In this algorithm, sample datasets are stored in Google Drive and later retrieve
 
 
 ## For RGB images work flow
-
+To simulate this code, we have taken lo light images from ExDark [DOI: (https://doi.org/10.1016/j.cviu.2018.10.010)], and uploaded some samples in ibb image hosting in google colab.
 convshots(Classical Image)-->conv1_rgb(Classical Image)-->conv_img1 (Taking Classical input and converting to superposition state)-->convert_a(Random measurement between two proabilistic components)--> Returns a measured classical value--> returns converted from conv_img1()--> conv1_rgb() merges the values for red, green and Blue--> returns image(measured pixel)--> multiple measurement is performed in convshots() and mean is calculated--> finally it returns converted classical pixel
 
 ### The functions of RGB codes
