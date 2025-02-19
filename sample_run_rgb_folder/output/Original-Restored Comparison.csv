@@ -1,0 +1,3 @@
+,Input,Output,MSE,RMSE,PSNR,SSIM,UQI,MSSSIM,ERGAS,SCC,RASE,SAM
+0,E:\projects\ISQR-Model\sample_run_rgb_folder\input\rgb\2015_00001_256.jpg,E:\projects\ISQR-Model\sample_run_rgb_folder\output\1\2015_00001_1.jpg,11266.4706,106.1436,7.6129,"(np.float64(0.0823), np.float64(0.138))",0.2436,0.3936,23.7711,0.1513,6654.8221,0.5604
+0,E:\projects\ISQR-Model\sample_run_rgb_folder\input\rgb\2015_00003_256.jpg,E:\projects\ISQR-Model\sample_run_rgb_folder\output\1\2015_00003_1.jpg,9103.5215,95.4124,8.5387,"(np.float64(0.0637), np.float64(0.1144))",0.166,0.3148,29.3597,0.1787,8050.0566,0.7163

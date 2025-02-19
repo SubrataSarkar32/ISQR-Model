@@ -1,4 +1,9 @@
 # ISQR-Model
+
+Grayscale only : [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14860307.svg)](https://doi.org/10.5281/zenodo.14860307)
+
+RGB doi: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14860307.svg)](https://doi.org/10.5281/zenodo.14860307)
+
 Implementation of ISQR model and its simulation
 
 In this file we have shown the implementation of ISQR algorithm using Python Google Colab. in this file images are stored in google drive and the output are also stored in different directory of google drive. In this code we mainly focus on encoding pixel states instead of creating image matrix. The image matrix we thought of has already been created using several unitary gates. 
@@ -35,8 +40,29 @@ To run this file you need to follow below steps:
 4. To run on provided sample folder use `python isqr_grayscale.py --input_folder E:\projects\ISQR-Model\sample_run_folder\input` on windows or `python isqr_grayscale.py --input_folder /home/user/ISQR-Model/sample_run_folder/input` on linux. Change the input directory name as per your requirement. Available options for `isqr_grayscale.py` are:
 
     - `--input_folder` : Specify full path to your input folder
+    - `--rgb`: Toggle rgb or grayscale, expects True/False
     - `--plot`: Toggle to plot the image with matplotlib, expects True/False
     - `--number_of_shots`: number of times to perform measurement.
 
+   Sample run command for rgb `python isqr_grayscale.py --input_folder E:\projects\ISQR-Model\sample_run_rgb_folder\input --rgb True`
+
+## Sample Images(Grayscale)
+
+Input
+
+![Original input](./sample_run_folder/input/grayscale/2015_00001_256.jpg)
+
+Output (500 shots)
+
+![Processed output](./sample_run_folder/output/500/2015_00001_500.jpg)
 
 
+## Sample Images(RGB)
+
+Input
+
+![Original input](./sample_run_rgb_folder/input/rgb/2015_00001_256.jpg)
+
+Output (1 shot)
+
+![Processed output](./sample_run_rgb_folder/output/1/2015_00001_1.jpg)

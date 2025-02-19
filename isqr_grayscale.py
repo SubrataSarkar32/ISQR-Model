@@ -39,6 +39,33 @@ def conv_rgb3_arcsin(img):
     return img
 
 
+def conv_img1(img, size=256):
+    small = cv2.resize(img, (size, size))
+    H = np.array([[1, 0], [0, 1]])
+    converted = np.zeros((size, size))
+    img = small
+    miny = np.amin(small)
+    maxy = np.amax(small)
+    for i in range(0, len(small)):
+        for j in range(0, len(small)):
+            converted[i][j] = 2.0 * np.arccos(np.sqrt((float(small[i][j]) - float(miny)) / (float(maxy) - float(miny))))  # ISQR Encoding
+            H = np.array([[1, 0], [0, 1]])
+            a1 = np.cos(converted[i][j])
+            a2 = np.sin(converted[i][j])
+            i_state = np.array([[a1], [a2]])
+            c = convert_a(H, i_state)
+            converted[i][j] = c
+    return converted
+
+
+def conv1_rgb(img, size1=256):
+    img = cv2.resize(img, (size1, size1))
+    b, g, r = img[:, :, 0], img[:, :, 1], img[:, :, 2]
+    b1, g1, r1 = conv_img1(b, size=size1), conv_img1(g, size=size1), conv_img1(r, size=size1)
+    img[:, :, 0], img[:, :, 1], img[:, :, 2] = b1, g1, r1
+    return img
+
+
 def conv_img1_arcsin(img):
     small = cv2.resize(img, (256, 256))
     H = np.array([[1, 0], [0, 1]])
@@ -94,24 +121,21 @@ def convshots_bw_arcsin(img, shots=200):
     return converted
 
 
-def convshots_rgb_arcsin(img, shots=200):
+def convshots_rgb_arcsin(img, shots=1, size=256):
     img_list = []
-    img1 = conv_rgb3_arcsin(img)
-    print(img1)
     for i in range(shots):
-        conv2 = conv1_rgb_arcsin(img1)
+        conv2 = conv1_rgb(img, size1=size)
         img_list += [conv2]
-    converted = np.zeros((256, 256, 3))
+    converted = np.zeros((size, size, 3))
     sh = 0
     for i in range(0, len(img)):
         for j in range(0, len(img[0])):
-            for k in range(3):
+            for k in range(0, len(img[0][0])):
                 val = 0
                 for o in range(shots):
                     val += img_list[o][i][j][k]
-                converted[i][j] = val/shots
+                converted[i][j][k] = val/shots
                 sh += 1
-    print(converted)
     return converted
 
 
@@ -160,7 +184,7 @@ def run_bw_on_folder(input_folder="", plot=False, number_of_shots=[1, 100, 500])
         os.makedirs(os.path.join(input_folder, "grayscale"), exist_ok=True)
         cv2.imwrite(os.path.join(input_folder, "grayscale", filey.rsplit(".")[0] + "_256.jpg"), real)
         for k in number_of_shots:
-            conv = convshots_bw_arcsin(real, shots=k)
+            conv = convshots_bw_arcsin(real, shots=int(k))
             if plot:
                 plt.imshow(small)
                 plt.show()
@@ -187,15 +211,76 @@ def run_bw_on_folder(input_folder="", plot=False, number_of_shots=[1, 100, 500])
     df.to_csv(os.path.join(output_folder, 'Original-Restored Comparison.csv'))
 
 
+def run_rgb_on_folder(input_folder="", plot=False, number_of_shots=[1, 100, 500]):
+    # Load Local Images
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    if input_folder == "":
+        input_folder = os.path.join(dir_path, 'Coal Mines Dataset', 'input')
+        files = [f for f in os.listdir(input_folder)]
+        output_folder = os.path.join(dir_path, 'Coal Mines Dataset', 'output')
+    else:
+        files = [f for f in os.listdir(input_folder)]
+        output_folder = os.path.join(os.path.dirname(input_folder), 'output')
+    os.makedirs(output_folder, exist_ok=True)
+    print("Input Folder", input_folder)
+    print("Output folder", output_folder)
+    print(len(files), "input files detected")
+
+    df = pd.DataFrame()
+    for filey in files:
+        print("Processing", filey)
+        img = cv2.imread(os.path.join(input_folder, filey))
+        small = cv2.resize(img, (256, 256))
+        if filey.endswith(".png"):
+            small = cv2.cvtColor(small, cv2.COLOR_BGRA2BGR)
+        if plot:
+            plt.imshow(small)
+            plt.show()
+        real = small
+        os.makedirs(os.path.join(input_folder, "rgb"), exist_ok=True)
+        cv2.imwrite(os.path.join(input_folder, "rgb", filey.rsplit(".")[0] + "_256.jpg"), real)
+        for k in number_of_shots:
+            conv = convshots_rgb_arcsin(real, shots=int(k))
+            if plot:
+                plt.imshow(small)
+                plt.show()
+            os.makedirs(os.path.join(output_folder, str(k)), exist_ok=True)
+            cv2.imwrite(os.path.join(output_folder, str(k), filey.split(".")[0] + f"_{k}.jpg"), conv)
+            restored = cv2.imread(os.path.join(output_folder, str(k), filey.rsplit(".")[0] + f"_{k}.jpg"))
+            values = {
+                        "Input": os.path.join(input_folder, "rgb", filey.rsplit(".")[0] + "_256.jpg"),
+                        "Output": os.path.join(output_folder, str(k), filey.split(".")[0] + f"_{k}.jpg"),
+                        "MSE": np.round(mse(restored, real), 4),
+                        "RMSE": np.round(rmse(restored, real), 4),
+                        "PSNR": np.round(psnr(restored, real), 4),
+                        "SSIM": (np.round(ssim(restored, real)[0], 4), np.round(ssim(restored, real)[1], 4)),
+                        "UQI": np.round(uqi(restored, real), 4),
+                        "MSSSIM": np.round(msssim(restored, real).real, 4),
+                        "ERGAS": np.round(ergas(restored, real), 4),
+                        "SCC": np.round(scc(restored, real), 4),
+                        "RASE": np.round(rase(restored, real), 4),
+                        "SAM": np.round(sam(restored, real), 4)
+                    }
+        df = pd.concat([df, pd.DataFrame.from_dict([values])])
+    df.head()
+    df.to_csv(os.path.join(output_folder, 'Original-Restored Comparison.csv'))
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
                     prog='PNEQIR',
                     description='Convert low light image to normal using PNEQIR')
     parser.add_argument('--input_folder', type=str,
                         help='Input folder location')
+    parser.add_argument('--rgb', type=bool, default=False,
+                        help='plot images')
     parser.add_argument('--plot', type=bool, default=False,
                         help='plot images')
     parser.add_argument('--number_of_shots', nargs='?', default=[1, 100, 500],
                         help='Number of times measurement to be performed on quantun image')
     args = parser.parse_args()
-    run_bw_on_folder(args.input_folder, args.plot, args.number_of_shots)
+    if args.rgb:
+        print("RGB")
+        run_rgb_on_folder(args.input_folder, args.plot, args.number_of_shots)
+    else:
+        run_bw_on_folder(args.input_folder, args.plot, args.number_of_shots)
