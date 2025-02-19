@@ -2,7 +2,7 @@
 
 Grayscale only : [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14860307.svg)](https://doi.org/10.5281/zenodo.14860307)
 
-RGB doi: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14860307.svg)](https://doi.org/10.5281/zenodo.14860307)
+Grayscale and RGB doi: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14894875.svg)](https://doi.org/10.5281/zenodo.14894875)
 
 Implementation of ISQR model and its simulation
 
