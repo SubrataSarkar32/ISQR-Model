@@ -7,7 +7,7 @@ Original file is located at
     https://colab.research.google.com/drive/1gDG1Ymec4CZMQ9pWw6put9Vk6c7-zMNy
 """
 
-!pip install sewar
+#!pip install sewar
 
 import sys
 # set_printoptions(threshold=sys.maxsize)
@@ -25,7 +25,7 @@ from skimage import io
 #!wget https://i.ibb.co/GxhRPnC/lake-512.jpg -O lake.jpg
 #!wget https://i.ibb.co/D18bYP1/peppers-color.jpg -O peppers.jpg
 #!wget https://i.ibb.co/2dckpJ9/mandril-color.jpg -O mandril.jpg
-!wget https://i.ibb.co/QNsZ6z5/2015_00015.jpg -O 2015_00015.jpg
+#!wget https://i.ibb.co/QNsZ6z5/2015_00015.jpg -O 2015_00015.jpg
 #!wget https://i.postimg.cc/0yLDZZkp/Dark-RGB-2.jpg
 #!wget https://i.postimg.cc/nh1BfWmZ/Dark-RGB-1.png
 
@@ -85,121 +85,96 @@ for filey in files:
   cv2_imshow(conv2)
   cv2.imwrite("quantum_rgb.png",conv2)
 
-def convert_a(H,i_state):
-    cov = np.dot(H,i_state)
+
+def convert_a(H, i_state):
+    cov = np.dot(H, i_state)
     si = cov
-    alpha=si[0][0]
-    beta=si[1][0]
-    t=[alpha , beta]
-    e=random.choices(t,weights=[alpha**2,beta**2],k=1)
+    alpha = si[0][0]
+    beta = si[1][0]
+    t = [alpha, beta]
+    e = random.choices(t, weights=[alpha**2, beta**2], k=1)
     if e == alpha:
-      c = 0*255
+        c = 0*255
     else:
-      c = 1*255
+        c = 1*255
     return c
 
-def conv_img1(img,size=256):
-    small = cv2.resize(img,(size,size))
-    H = np.array([[1,0],[0,1]])
-    converted = np.zeros((size,size))
+
+def conv_img1(img, size=256):
+    small = cv2.resize(img, (size, size))
+    H = np.array([[1, 0], [0, 1]])
+    converted = np.zeros((size, size))
     img = small
-    miny=np.amin(small)
-    maxy=np.amax(small)
-    for i in range(0,len(small)):
-        for j in range(0,len(small)):
-            converted[i][j] = 2.0*np.arccos(np.sqrt((float(small[i][j])-float(miny))/(float(maxy)-float(miny)))) # ISQR Encoding
-            H = np.array([[1,0],[0,1]])
-            a1=np.cos(converted[i][j])
-            a2=np.sin(converted[i][j])
-            i_state= np.array([[a1],[a2]])
-            c = convert_a(H,i_state)
-            #list_st+=[c[0]**2 + c[1]**2]
-            #converted [i][2*j] = c[0]*255
-            converted [i][j] = c
-            #converted[i][j]=small[i][j]
-            #converted[i][j] = (float(small[i][j])/255)* math.degrees(90) # FRQI Encoding
-            #print(small[i][j])
+    miny = np.amin(small)
+    maxy = np.amax(small)
+    for i in range(0, len(small)):
+        for j in range(0, len(small)):
+            converted[i][j] = 2.0*np.arccos(np.sqrt((float(small[i][j])-float(miny))/(float(maxy)-float(miny))))  # ISQR Encoding
+            H = np.array([[1, 0],[0, 1]])
+            a1 = np.cos(converted[i][j])
+            a2 = np.sin(converted[i][j])
+            i_state = np.array([[a1],[a2]])
+            c = convert_a(H, i_state)
+            # list_st+=[c[0]**2 + c[1]**2]
+            # converted [i][2*j] = c[0]*255
+            converted[i][j] = c
+            # converted[i][j]=small[i][j]
+            # converted[i][j] = (float(small[i][j])/255)* math.degrees(90) # FRQI Encoding
+            # print(small[i][j])
 
     return converted
 
-def conv1_rgb(img,size1=256):
-    img = cv2.resize(img,(size1,size1))
-    b, g, r    = img[:, :, 0], img[:, :, 1], img[:, :, 2]
-    b1, g1, r1 = conv_img1(b,size=size1), conv_img1(g,size=size1), conv_img1(r,size=size1)
-    img[:,:,0], img[:,:,1], img[:,:,2] = b1, g1, r1
+
+def conv1_rgb(img, size1=256):
+    img = cv2.resize(img, (size1, size1))
+    b, g, r = img[:, :, 0], img[:, :, 1], img[:, :, 2]
+    b1, g1, r1 = conv_img1(b,size=size1), conv_img1(g,size=size1), conv_img1(r, size=size1)
+    img[:, :, 0], img[:, :, 1], img[:, :, 2] = b1, g1, r1
     return img
 
-def convshots(img,shots=1,size=32):
-    img_list=[]
+
+def convshots(img, shots=1, size=32):
+    img_list = []
     for i in range(shots):
-        conv2 = conv1_rgb(img,size1=size)
+        conv2 = conv1_rgb(img, size1=size)
         img_list += [conv2]
-    converted = np.zeros((size,size,3))
+    converted = np.zeros((size, size, 3))
     sh = 0
-    print(len(img),len(img[0]),len(img[0][0]))
-    for i in range(0,len(img)):
-         for j in range(0,len(img[0])):
-             for k in range(0,len(img[0][0])):
-                #val = {}
+    print(len(img), len(img[0]), len(img[0][0]))
+    for i in range(0, len(img)):
+        for j in range(0, len(img[0])):
+            for k in range(0, len(img[0][0])):
+                # val = {}
                 val = 0
-                for l in range(shots):
-                    #print(i,j,k,l,img_list[l][i][j][k])
-                    val += img_list[l][i][j][k]
-                    '''
-                    if img_list[l][i][j][k] in val:
-                        val[img_list[l][i][j][k]]+=1
-                    else:
-                        val[img_list[l][i][j][k]]=1
-                keys = list(val.keys())
-                print(val)
-                if(len(keys)>1):
-                    if val[keys[0]]>val[keys[1]]:
-                        converted[i][j][k] = keys[0]
-                    else:
-                        converted[i][j][k] = keys[1]
-                else:
-                    converted[i][j][k] = keys[0]
-                    '''
-                converted[i][j][k] = val/shots
-                #print(sh)
-                sh+=1
+                for m in range(shots):
+                    # print(i,j,k,l,img_list[l][i][j][k])
+                    val += int(img_list[m][i][j][k])
+                converted[i][j][k] = np.float64(val/shots)
+                # print(sh)
+                sh += 1
     return converted
 
 
-def grey_convshots(img,shots=1):
-    img_list=[]
+def grey_convshots(img, shots=1, size=32):
+    img_list = []
     for i in range(shots):
-        conv2 = conv_img3_arcsin(img)
+        conv2 = conv_img1(img, size)
         img_list += [conv2]
-    converted = np.zeros((256,256))
+    converted = np.zeros((size, size))
     sh = 0
-    print(len(img),len(img[0]))
-    for i in range(0,len(img)):
-         for j in range(0,len(img[0])):
-                #val = {}
-                val = 0
-                for l in range(shots):
-                    #print(i,j,k,l,img_list[l][i][j][k])
-                    val += img_list[l][i][j]
-                    '''
-                    if img_list[l][i][j][k] in val:
-                        val[img_list[l][i][j][k]]+=1
-                    else:
-                        val[img_list[l][i][j][k]]=1
-                keys = list(val.keys())
-                print(val)
-                if(len(keys)>1):
-                    if val[keys[0]]>val[keys[1]]:
-                        converted[i][j][k] = keys[0]
-                    else:
-                        converted[i][j][k] = keys[1]
-                else:
-                    converted[i][j][k] = keys[0]
-                    '''
-                converted[i][j] = val/shots
-                #print(sh)
-                sh+=1
+    print(len(img), len(img[0]))
+    for i in range(0, len(img)):
+        for j in range(0,len(img[0])):
+            # val = {}
+            val = 0
+            for m in range(shots):
+                # print(i,j,k,l,img_list[l][i][j][k])
+                val += int(img_list[m][i][j])
+            converted[i][j] = np.float64(val/shots)
+            # print(sh)
+            sh += 1
     return converted
+
 
 df = pd.DataFrame()
 for filey in files:

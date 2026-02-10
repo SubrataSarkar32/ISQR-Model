@@ -48,13 +48,14 @@ def conv_img1(img, size=256):
     maxy = np.amax(small)
     for i in range(0, len(small)):
         for j in range(0, len(small)):
-            converted[i][j] = 2.0 * np.arccos(np.sqrt((float(small[i][j]) - float(miny)) / (float(maxy) - float(miny))))  # ISQR Encoding
-            H = np.array([[1, 0], [0, 1]])
+            converted[i][j] = 2.0*np.arccos(np.sqrt((float(small[i][j])-float(miny))/(float(maxy)-float(miny))))  # ISQR Encoding
+            H = np.array([[1, 0],[0, 1]])
             a1 = np.cos(converted[i][j])
             a2 = np.sin(converted[i][j])
-            i_state = np.array([[a1], [a2]])
+            i_state = np.array([[a1],[a2]])
             c = convert_a(H, i_state)
             converted[i][j] = c
+
     return converted
 
 
@@ -128,13 +129,14 @@ def convshots_rgb_arcsin(img, shots=1, size=256):
         img_list += [conv2]
     converted = np.zeros((size, size, 3))
     sh = 0
+    print(len(img), len(img[0]), len(img[0][0]))
     for i in range(0, len(img)):
         for j in range(0, len(img[0])):
             for k in range(0, len(img[0][0])):
                 val = 0
-                for o in range(shots):
-                    val += img_list[o][i][j][k]
-                converted[i][j][k] = val/shots
+                for m in range(shots):
+                    val += int(img_list[m][i][j][k])
+                converted[i][j][k] = np.float64(val/shots)
                 sh += 1
     return converted
 

@@ -66,3 +66,8 @@ Input
 Output (1 shot)
 
 ![Processed output](./sample_run_rgb_folder/output/1/2015_00001_1.jpg)
+
+
+## License
+
+The Exdark dataset is available under BSD-3
