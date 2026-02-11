@@ -48,10 +48,10 @@ def conv_img1(img, size=256):
     maxy = np.amax(small)
     for i in range(0, len(small)):
         for j in range(0, len(small)):
-            converted[i][j] = 2.0*np.arccos(np.sqrt((float(small[i][j])-float(miny))/(float(maxy)-float(miny))))  # ISQR Encoding
+            theta = 2.0*np.arccos(np.sqrt((float(small[i][j])-float(miny))/(float(maxy)-float(miny))))  # ISQR Encoding
             H = np.array([[1, 0],[0, 1]])
-            a1 = np.cos(converted[i][j])
-            a2 = np.sin(converted[i][j])
+            a1 = np.cos(theta)
+            a2 = np.sin(theta)
             i_state = np.array([[a1],[a2]])
             c = convert_a(H, i_state)
             converted[i][j] = c
